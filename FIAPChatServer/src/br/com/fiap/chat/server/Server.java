@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import br.com.fiap.chat.utils.Commands;
+import br.com.fiap.chat.utils.Utils;
 import br.com.fiap.chat.vo.Message;
 import br.com.fiap.chat.vo.Room;
 import br.com.fiap.chat.vo.User;
@@ -21,6 +22,8 @@ public class Server {
 	public static ServerSender sender;
 	public static Map<Integer, String> _appMenu = new HashMap<Integer, String>();
 	public static Map<Integer, String> _roomMenu = new HashMap<Integer, String>();
+	
+	public static final String LOBBY ="Lobby";
 
 	static {
 		rooms = new ArrayList<Room>();
@@ -45,7 +48,7 @@ public class Server {
 		for (Entry<Integer, String> option : menu.entrySet()) {
 			Integer key = option.getKey();
 			String value = option.getValue();
-			menuToString += key + " - " + value + "\n";
+			menuToString += key + " - " + value + Utils.LINE_SEPARATOR;
 		}
 
 		return menuToString;
@@ -60,7 +63,7 @@ public class Server {
 			if (keyToSkip == key)
 				continue;
 
-			menuToString += key + " - " + value + "\n";
+			menuToString += key + " - " + value + Utils.LINE_SEPARATOR;
 		}
 
 		return menuToString;
@@ -86,6 +89,8 @@ public class Server {
 			if (user.getUserIp().equals(sourceIp)) {
 				user.setName(userName);
 				user.setRegistred(true);
+				
+				getRoomByName(LOBBY).getUsers().add(user);
 			}
 		}
 	}
@@ -104,7 +109,7 @@ public class Server {
 		for (Room r : rooms) {
 			if (r != null) {
 				for (User user : r.getUsers()) {
-					if (user != null && user.getName().equals(userName)) {
+					if (user != null && user.getName().equalsIgnoreCase(userName)) {
 						return r;
 					}
 				}
@@ -116,29 +121,35 @@ public class Server {
 	public static void joinRoom(String userName, String roomName) {
 		Room room = getRoomByName(roomName);
 		User user = getUserByName(userName);
+		
+		Room currentRoom = getRoomByUser(userName);
+		if(!currentRoom.getName().equals(LOBBY)) {
+			leftRoom(userName, roomName);
+		}
+		
 		room.getUsers().add(user);
 
 		for (User u : room.getUsers()) {
-			Message mensagem = new Message(u.getUserIp(), Commands.NOTIFICATION, "CHAT > Usuário " + userName
-					+ " entrou na sala.\n");
+			Message mensagem = new Message(u.getUserIp(), Commands.NOTIFICATION, roomName + " > Usuário " + userName
+					+ " entrou na sala." + Utils.LINE_SEPARATOR);
 			Server.sender.sendMessage(mensagem);
 		}
 	}
 
 	public static void leftRoom(String userName, String roomName) {
 		Room room = getRoomByName(roomName);
-		Iterator<User> iterUser = room.getUsers().iterator();
-
-		while (iterUser.hasNext()) {
-			User usuario = iterUser.next();
-			if (usuario.getName().equals(userName)) {
-				iterUser.remove();
+		
+		for(User user : room.getUsers()) {
+			if (user.getName().equalsIgnoreCase(userName)) {
+				room.getUsers().remove(user);
+				joinRoom(user.getName(), LOBBY);
+			} else {
+				Message mensagem = new Message(user.getUserIp(), Commands.NOTIFICATION, "CHAT > Usuário " + userName
+						+ " saiu da sala." + Utils.LINE_SEPARATOR);
+				Server.sender.sendMessage(mensagem);
 			}
-
-			Message mensagem = new Message(usuario.getUserIp(), Commands.NOTIFICATION, "CHAT > Usuário " + userName
-					+ " saiu da sala.\n");
-			Server.sender.sendMessage(mensagem);
 		}
+		
 	}
 
 	public static User getUserByName(String name) {
@@ -152,21 +163,21 @@ public class Server {
 
 	public static String roomsToString() {
 		if (rooms.size() <= 0)
-			return " --- Não existem salas cadastradas ---\n";
+			return " --- Não existem salas cadastradas ---" + Utils.LINE_SEPARATOR;
 
-		String formatedString = " --- Salas: ---\n";
+		String formatedString = " --- Salas: ---" + Utils.LINE_SEPARATOR;
 		for (int i = 0; i < rooms.size(); i++) {
-			formatedString += "(" + (i + 1) + ") " + rooms.get(i).getName() + "\n";
+			formatedString += "(" + (i + 1) + ") " + rooms.get(i).getName() + Utils.LINE_SEPARATOR;
 		}
-		formatedString += "--- ------- ----\n";
+		formatedString += "--- ------- ----" + Utils.LINE_SEPARATOR;
 		return formatedString;
 	}
 
 	public static String usersInRoomToString(String roomName) {
 		Room room = getRoomByName(roomName);
-		String formatedString = " --- Usuários da sala " + roomName + ":  --- \n";
+		String formatedString = " --- Usuários da sala " + roomName + ":  --- " + Utils.LINE_SEPARATOR;
 		for (int i = 0; i < room.getUsers().size(); i++) {
-			formatedString += "(" + (i + 1) + ") " + room.getUsers().get(i).getName() + "\n";
+			formatedString += "(" + (i + 1) + ") " + room.getUsers().get(i).getName() + Utils.LINE_SEPARATOR;
 		}
 		return formatedString;
 
@@ -178,7 +189,7 @@ public class Server {
 		rooms.add(newRoom);
 		newRoom.getUsers().add(user);
 
-		return "Sala criada com sucesso\n";
+		return "Sala criada com sucesso" + Utils.LINE_SEPARATOR;
 	}
 
 	public static void deleteRoom(String userName, String roomName) {
@@ -194,12 +205,12 @@ public class Server {
 
 				Message mensagem = new Message(usuario.getUserIp(), Commands.NOTIFICATION,
 						"CHAT > Você foi removido da sala " + room.getName()
-								+ ", pois a sala foi deletada pelo administrador.\n");
+								+ ", pois a sala foi deletada pelo administrador." + Utils.LINE_SEPARATOR);
 				Server.sender.sendMessage(mensagem);
 			}
 		} else {
 			Message mensagem = new Message(user.getUserIp(), Commands.NOTIFICATION,
-					"CHAT > A sala somente pode ser deletada pelo administrador.\n");
+					"CHAT > A sala somente pode ser deletada pelo administrador." + Utils.LINE_SEPARATOR);
 			Server.sender.sendMessage(mensagem);
 		}
 	}
@@ -227,7 +238,7 @@ public class Server {
 			Message message = new Message();
 			message.setDestinationIp(u.getUserIp());
 			message.setCommand(Commands.MENU_ROOM);
-			message.setMessage("CHAT > Usuário " + remetente + ": " + msg + "\n");
+			message.setMessage("CHAT > Usuário " + remetente + ": " + msg + Utils.LINE_SEPARATOR);
 			Server.sender.sendMessage(message);
 		}
 	}
@@ -241,16 +252,16 @@ public class Server {
 			if (r != null) {
 				message.setDestinationIp(u.getUserIp());
 				message.setCommand(Commands.MENU_ROOM);
-				message.setMessage("CHAT > Usuário " + remetente + ": " + msg + "\n");
+				message.setMessage("CHAT > Usuário " + remetente + ": " + msg + Utils.LINE_SEPARATOR);
 			} else {
 				message.setCommand(Commands.MENU_ROOM);
-				message.setMessage("CHAT > Usuário" + destino + " não estava na sala \n");
+				message.setMessage("CHAT > Usuário" + destino + " não estava na sala " + Utils.LINE_SEPARATOR);
 			}
 			Server.sender.sendMessage(message);
 		} catch (Exception e) {
 			Message message = new Message();
 			message.setCommand(Commands.MENU_ROOM);
-			message.setMessage("CHAT > erro ao enviar mensagem \n");
+			message.setMessage("CHAT > erro ao enviar mensagem " + Utils.LINE_SEPARATOR);
 			Server.sender.sendMessage(message);
 		}
 

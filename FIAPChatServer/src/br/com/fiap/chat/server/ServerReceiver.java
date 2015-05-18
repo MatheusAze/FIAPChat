@@ -3,6 +3,7 @@ package br.com.fiap.chat.server;
 import br.com.fiap.chat.utils.Commands;
 import br.com.fiap.chat.utils.GSON;
 import br.com.fiap.chat.utils.Receiver;
+import br.com.fiap.chat.utils.Utils;
 import br.com.fiap.chat.vo.Message;
 import br.com.fiap.chat.vo.Room;
 import br.com.fiap.chat.vo.User;
@@ -24,10 +25,10 @@ public class ServerReceiver extends Receiver {
 
 		switch (operation) {
 		case ACCESS:
-			System.out.println("> IP " + sourceIp + " acessando pela primeira vez");
+			//System.out.println("> IP " + sourceIp + " acessando pela primeira vez");
 			Server.getAccess(sourceIp);
 			message.setCommand(Commands.REQUEST_USER_NAME);
-			message.setMessage("CHAT > Digite o seu nome de usuário: ");
+			message.setMessage("CHAT > Digite o seu nome de usuário");
 			Server.sender.sendMessage(message);
 			break;
 
@@ -37,12 +38,12 @@ public class ServerReceiver extends Receiver {
 			if (user == null) { // usuário não existe
 				Server.register(userName, sourceIp);
 				message.setCommand(Commands.MENU_APP);
-				message.setMessage("CHAT > " + userName + " registrado com sucesso!\n"
+				message.setMessage("CHAT > " + userName + " registrado com sucesso!" + Utils.LINE_SEPARATOR
 						+ Server.menuToString(Server._appMenu));
 			} else { // usuário já existe
 				message.setCommand(Commands.REQUEST_USER_NAME);
 				message.setMessage("CHAT > O usuário " + userName
-						+ " já está registrado\nCHAT > Digite o seu nome de usuário: ");
+						+ " já está registrado\nCHAT > Digite o seu nome de usuário");
 			}
 
 			Server.sender.sendMessage(message);
@@ -50,27 +51,27 @@ public class ServerReceiver extends Receiver {
 
 		case MENU_APP:
 			int menuAppKey = Integer.parseInt(msg);
-			System.out.println("[Menu App] Opção escolhida: " + menuAppKey);
+			//System.out.println("[Menu App] Opção escolhida: " + menuAppKey);
 			switch (menuAppKey) {
 			case 1:
 				message.setCommand(Commands.MENU_APP);
-				message.setMessage("CHAT > \n" + Server.roomsToString() + "Escolha uma nova opção:\n"
+				message.setMessage("CHAT > " + Utils.LINE_SEPARATOR + Server.roomsToString() + "Escolha uma nova opção:" + Utils.LINE_SEPARATOR
 						+ Server.menuToString(Server._appMenu, 1));
 				break;
 
 			case 2:
 				message.setCommand(Commands.REQUEST_CREATE_ROOM);
-				message.setMessage("CHAT > Criando uma nova sala...\n");
+				message.setMessage("CHAT > Criando uma nova sala..." + Utils.LINE_SEPARATOR);
 				break;
 
 			case 3:
 				message.setCommand(Commands.REQUEST_JOIN_ROOM);
-				message.setMessage("CHAT > Digite o nome da sala que deseja entrar:\n");
+				message.setMessage("CHAT > Digite o nome da sala que deseja entrar:" + Utils.LINE_SEPARATOR);
 				break;
 
 			default:
 				message.setCommand(Commands.INVALID_COMMAND);
-				message.setMessage("CHAT > O menu selecionado é invalido, tente novamente! \n"
+				message.setMessage("CHAT > O menu selecionado é invalido, tente novamente! " + Utils.LINE_SEPARATOR
 						+ Server.menuToString(Server._appMenu));
 				break;
 			}
@@ -80,13 +81,13 @@ public class ServerReceiver extends Receiver {
 		case SEND_CREATE_ROOM:
 			if (currentUser == null || !currentUser.isRegistred()) {
 				message.setCommand(Commands.REQUEST_USER_NAME);
-				message.setMessage("CHAT > Usuário não identificado.\n" + "Digite o seu nome de usuário: ");
+				message.setMessage("CHAT > Usuário não identificado." + Utils.LINE_SEPARATOR + "Digite o seu nome de usuário: ");
 			} else {
 				Room newRoom = GSON.getInstance().fromJson(msg, Room.class);
 				String result = Server.createRoom(currentUser.getName(), newRoom.getName(), newRoom.getDescription());
 				message.setCommand(Commands.MENU_ROOM);
-				message.setMessage("CHAT > " + result + "CHAT > Bem vindo à sala " + newRoom.getName() + ".\n"
-						+ "Oque deseja fazer?\n" + Server.menuToString(Server._roomMenu));
+				message.setMessage("CHAT > " + result + "CHAT > Bem vindo à sala " + newRoom.getName() + "." + Utils.LINE_SEPARATOR
+						+ "Oque deseja fazer?" + Utils.LINE_SEPARATOR + Server.menuToString(Server._roomMenu));
 			}
 
 			Server.sender.sendMessage(message);
@@ -97,12 +98,12 @@ public class ServerReceiver extends Receiver {
 			Room room = Server.getRoomByName(roomName);
 			if (room == null) {
 				message.setCommand(Commands.INVALID_COMMAND);
-				message.setMessage("CHAT > Sala não encontrada, tente novamente! \n"
+				message.setMessage("CHAT > Sala não encontrada, tente novamente! " + Utils.LINE_SEPARATOR
 						+ Server.menuToString(Server._appMenu));
 			} else {
 				Server.joinRoom(currentUser.getName(), room.getName());
 				message.setCommand(Commands.MENU_ROOM);
-				message.setMessage("CHAT > Bem vindo à sala " + room.getName() + ".\n" + "Oque deseja fazer?\n"
+				message.setMessage("CHAT > Bem vindo à sala " + room.getName() + "." + Utils.LINE_SEPARATOR + "Oque deseja fazer?" + Utils.LINE_SEPARATOR
 						+ Server.menuToString(Server._roomMenu));
 			}
 
@@ -118,19 +119,19 @@ public class ServerReceiver extends Receiver {
 				// ver usuários da sala
 				case 1:
 					message.setCommand(Commands.MENU_ROOM);
-					message.setMessage("CHAT > \n" + Server.usersInRoomToString(currentRoom.getName())
-							+ "Escolha uma nova opção:\n" + Server.menuToString(Server._roomMenu, 1));
+					message.setMessage("CHAT > " + Utils.LINE_SEPARATOR + Server.usersInRoomToString(currentRoom.getName())
+							+ "Escolha uma nova opção:" + Utils.LINE_SEPARATOR + Server.menuToString(Server._roomMenu, 1));
 					break;
 
 				case 2:
 					message.setCommand(Commands.REQUEST_MESSAGE);
-					message.setMessage("CHAT > escreva a mensagem \n");
+					message.setMessage("CHAT > escreva a mensagem " + Utils.LINE_SEPARATOR);
 
 					break;
 
 				case 3:
 					message.setCommand(Commands.REQUEST_MESSAGE_PRIVATE);
-					message.setMessage("CHAT > escreva o usuario: \n");
+					message.setMessage("CHAT > escreva o usuario: " + Utils.LINE_SEPARATOR);
 
 					break;
 
@@ -138,26 +139,26 @@ public class ServerReceiver extends Receiver {
 				case 4:
 					Server.leftRoom(currentUser.getName(), currentRoom.getName());
 					message.setCommand(Commands.MENU_APP);
-					message.setMessage("CHAT > Oque deseja fazer?\n" + Server.menuToString(Server._appMenu));
+					message.setMessage("CHAT > Oque deseja fazer?" + Utils.LINE_SEPARATOR + Server.menuToString(Server._appMenu));
 					break;
 
 				// Excluir a Sala
 				case 5:
 					Server.deleteRoom(currentUser.getName(), currentRoom.getName());
 					message.setCommand(Commands.MENU_APP);
-					message.setMessage("CHAT > Oque deseja fazer?\n" + Server.menuToString(Server._appMenu));
+					message.setMessage("CHAT > Oque deseja fazer?" + Utils.LINE_SEPARATOR + Server.menuToString(Server._appMenu));
 					break;
 
 				default:
 					message.setCommand(Commands.INVALID_COMMAND);
-					message.setMessage("CHAT > O menu selecionado é invalido, tente novamente! \n"
+					message.setMessage("CHAT > O menu selecionado é invalido, tente novamente! " + Utils.LINE_SEPARATOR
 							+ Server.menuToString(Server._roomMenu));
 					break;
 				}
 				Server.sender.sendMessage(message);
 			} else {
 				message.setCommand(Commands.INVALID_COMMAND);
-				message.setMessage("CHAT > Sala não encontrada, tente novamente! \n"
+				message.setMessage("CHAT > Sala não encontrada, tente novamente! " + Utils.LINE_SEPARATOR
 						+ Server.menuToString(Server._appMenu));
 			}
 			break;
@@ -177,7 +178,7 @@ public class ServerReceiver extends Receiver {
 
 		default:
 			message.setCommand(Commands.NOTIFICATION);
-			message.setMessage("CHAT > Comando inválido!\n");
+			message.setMessage("CHAT > Comando inválido!" + Utils.LINE_SEPARATOR);
 			Server.sender.sendMessage(message);
 			break;
 
