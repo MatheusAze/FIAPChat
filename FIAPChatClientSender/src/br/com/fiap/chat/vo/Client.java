@@ -18,11 +18,11 @@ public class Client {
 		CommonMemory.writeInfo(NOT_READ + operation.toString());
 	}
 	
-	public static void requestUserInputForRoomCreation(Commands operation) {
+	public static Message requestUserInputForRoomCreation() {
 		String message = null;
 		
-		String name = Console.getConsole().readLine("Digite o nome da Sala:");
-		String description = Console.getConsole().readLine("Digite a descricao da Sala:");
+		String name = Console.getConsole().readLine("Digite o nome da Sala: ");
+		String description = Console.getConsole().readLine("Digite a descricao da Sala: ");
 				
 		Room room = new Room();
 		room.setName(name);
@@ -30,17 +30,18 @@ public class Client {
 		message = Room.toJsonString(room);
 		
 		Message msg = new Message();	
-		msg.setCommand(operation);
+		msg.setCommand(Commands.SEND_CREATE_ROOM);
 		msg.setMessage(message);
-		sender.sendMessage(msg);
+		
+		return msg;
 	}
 	
-	public static void requestUserInputForPrivateMessage(Commands operation) {	
+	public static void requestUserInputForPrivateMessage() {	
 		String destUser = Console.getConsole().readLine("CHAT > Digite o nome do usuário");
 		String privateMessage = Console.getConsole().readLine("CHAT > Escreva a mensagem");
 		
 		Message msg = new Message();
-		msg.setCommand(operation);
+		msg.setCommand(Commands.SEND_MESSAGE_PRIVATE);
 		msg.getAdditionalInfo().put("destUser", destUser);
 		msg.setMessage(privateMessage);
 		

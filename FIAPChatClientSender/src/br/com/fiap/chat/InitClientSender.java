@@ -1,6 +1,7 @@
 package br.com.fiap.chat;
 
 import java.io.FileNotFoundException;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import br.com.fiap.chat.utils.Commands;
@@ -22,33 +23,35 @@ public class InitClientSender {
 			try {
 				Console.getConsole().clear();
 				String message = Console.getConsole().readLine();
-				
+
 				String operationStr = CommonMemory.readInfo();
 				Commands command = Commands.SEND_MESSAGE;
-				if(operationStr.charAt(0) == '0') {
+				if (operationStr.charAt(0) == '0') {
 					operationStr = operationStr.substring(2);
-					System.out.println("-" + operationStr + "-");
-					command = Commands.valueOf(operationStr);
-					if (command.equals(Commands.MENU_APP))
-					{
-						command = Commands.getCommandByFriendlyCommand(message);
-						if (command == null)
-						{
-							System.out.println("Comando Inválido, tente novamente!");
-							continue;
-						}
+					if(!operationStr.equalsIgnoreCase(Commands.DO_NOTHING.toString()) &&
+							!operationStr.equalsIgnoreCase(Commands.NOTIFICATION.toString())) {
+						// System.out.println("-" + operationStr + "-");
+						command = Commands.valueOf(operationStr);
 					}
-
+					// Escreve a operação sem o '0-' na frente, indicando que já foi utilizada
 					CommonMemory.writeInfo(operationStr);
+				} else {
+					Commands commandFromInput = Commands.getCommandByFriendlyCommand(message);
+					if (commandFromInput != null) {
+						command = commandFromInput;
+					}
 				}
-				
-				Message msg = new Message();
-				msg.setMessage(message);
-				msg.setCommand(command);
-				
+
+				Message msg = treatLocalOperations(command);
+				if (msg == null) {// no local treatment
+					msg = new Message();
+					msg.setMessage(message);
+					msg.setCommand(command);
+				}
+
 				Client.sender.sendMessage(msg);
-				
-			} catch (FileNotFoundException e) { 
+
+			} catch (FileNotFoundException e) {
 				System.err.println("> CHAT: ERRO FATAL! OPERAÇÂO INDEFINIDA!");
 				System.exit(-1);
 			}
@@ -58,7 +61,17 @@ public class InitClientSender {
 
 	private static void initConnection() {
 		Console.getConsole().println("> Chat iniciado");
-		String ipServer = Console.getConsole().readLine("> Digite o IP do servidor: ");
+		boolean validIp = false;
+		String ipServer = null;
+		while (!validIp) {
+			ipServer = Console.getConsole().readLine("> Digite o IP do servidor: ");
+			try {
+				InetAddress.getByName(ipServer);
+				validIp = true;
+			} catch (UnknownHostException e) {
+				Console.getConsole().println("> O servidor " + ipServer + " não é conhecido.");
+			}
+		}
 
 		try {
 			Console.getConsole().println("> Conectando com o servidor...");
@@ -72,6 +85,19 @@ public class InitClientSender {
 		msg.setMessage("");
 		msg.setCommand(Commands.ACCESS);
 		Client.sender.sendMessage(msg);
+	}
+
+	private static Message treatLocalOperations(Commands command) {
+		Message msg = null;
+		switch (command) {
+		case SEND_CREATE_ROOM:
+			msg = Client.requestUserInputForRoomCreation();
+			break;
+		default:
+			break;
+		}
+
+		return msg;
 	}
 
 }

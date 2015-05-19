@@ -19,8 +19,9 @@ public enum Commands {
 	SEND_MESSAGE(false, null),
 	SEND_MESSAGE_PRIVATE(false, null),
 	SEND_PRIVATE_USER(false, null),
-	MENU_APP(false, null),
-	INVALID_COMMAND(false, null);	
+	DO_NOTHING(false, null),
+	INVALID_COMMAND(false, null),
+	HELP(true, "/help");	
 	
 	private boolean isUserCommand;
 	private String userFriendlyCommand;
@@ -44,7 +45,7 @@ public enum Commands {
 	public static Commands getCommandByFriendlyCommand(String friendlyCommand) {
 		for (Commands command : Commands.values()) {
 			if(command.isUserCommand &&
-					command.userFriendlyCommand.equals(friendlyCommand)) {
+					command.userFriendlyCommand.equalsIgnoreCase(friendlyCommand)) {
 				return command;
 			}
 		}

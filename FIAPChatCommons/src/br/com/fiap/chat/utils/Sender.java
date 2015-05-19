@@ -26,7 +26,7 @@ public abstract class Sender {
 	
 	public abstract void sendMessage(Message message);
 
-	public synchronized void sendMessage(Message message, String destinationIP) {
+	public void sendMessage(Message message, String destinationIP) {
 
 		try {
 			DatagramPacket packet = null;

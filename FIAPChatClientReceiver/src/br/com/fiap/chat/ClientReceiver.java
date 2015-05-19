@@ -26,14 +26,14 @@ public class ClientReceiver extends Receiver {
 				Console.getConsole().println(msg);			
 				Client.setInputCommand(Commands.SEND_USER_NAME);
 				break;
-			case MENU_APP:
+			case DO_NOTHING:
 			case INVALID_COMMAND:
 				Console.getConsole().println(msg);			
-				Client.setInputCommand(Commands.MENU_APP);			
+				Client.setInputCommand(Commands.DO_NOTHING);			
 				break;	
 			case REQUEST_CREATE_ROOM:
-				Console.getConsole().print(msg);			
-				Client.requestUserInputForRoomCreation(Commands.SEND_CREATE_ROOM);
+				Console.getConsole().print(msg);
+				Client.setInputCommand(Commands.SEND_CREATE_ROOM);
 				break;
 			case REQUEST_JOIN_ROOM:
 				Console.getConsole().println(msg);			
@@ -45,7 +45,7 @@ public class ClientReceiver extends Receiver {
 				break;
 			case REQUEST_MESSAGE_PRIVATE:
 				Console.getConsole().println(msg);
-				Client.requestUserInputForPrivateMessage(Commands.SEND_MESSAGE_PRIVATE);
+				Client.requestUserInputForPrivateMessage();
 			default:
 				break;
 		}
