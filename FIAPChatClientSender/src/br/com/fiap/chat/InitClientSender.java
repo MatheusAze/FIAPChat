@@ -26,18 +26,18 @@ public class InitClientSender {
 
 				String operationStr = CommonMemory.readInfo();
 				Commands command = Commands.SEND_MESSAGE;
-				if (operationStr.charAt(0) == '0') {
+				if (operationStr.charAt(0) == '0' // Not used yet
+						&& (!operationStr.equalsIgnoreCase(Commands.DEFAULT_COMMAND.toString())  // not a default command
+						 && !operationStr.equalsIgnoreCase(Commands.NOTIFICATION.toString()))) { // not a notification from server
+					
 					operationStr = operationStr.substring(2);
-					if(!operationStr.equalsIgnoreCase(Commands.DO_NOTHING.toString()) &&
-							!operationStr.equalsIgnoreCase(Commands.NOTIFICATION.toString())) {
-						// System.out.println("-" + operationStr + "-");
-						command = Commands.valueOf(operationStr);
-					}
-					// Escreve a operação sem o '0-' na frente, indicando que já foi utilizada
+					command = Commands.valueOf(operationStr);
+					// Writes the operation without the '0-' in front of it, 
+					// indicating that this operations was already used
 					CommonMemory.writeInfo(operationStr);
 				} else {
 					Commands commandFromInput = Commands.getCommandByFriendlyCommand(message);
-					if (commandFromInput != null) {
+					if (commandFromInput != null) { // command exists
 						command = commandFromInput;
 					}
 				}
@@ -87,6 +87,11 @@ public class InitClientSender {
 		Client.sender.sendMessage(msg);
 	}
 
+	/**
+	 * Method that treats consecutive user input when needed
+	 * @param command
+	 * @return
+	 */
 	private static Message treatLocalOperations(Commands command) {
 		Message msg = null;
 		switch (command) {

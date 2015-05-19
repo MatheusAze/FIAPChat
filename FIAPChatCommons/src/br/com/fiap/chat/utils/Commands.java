@@ -7,7 +7,7 @@ public enum Commands {
 	REQUEST_LIST_ROOMS(true, "listarSala"),
 	REQUEST_CREATE_ROOM(true, "criarSala"),
 	REQUEST_JOIN_ROOM(true, "entrarSala"),
-	REQUEST_MESSAGE(true, "enviarMsg"),
+	REQUEST_MESSAGE(false, "enviarMsg"),
 	REQUEST_MESSAGE_PRIVATE(true, "enviarMsgPrivada"),
 	REQUEST_USERS_IN_ROOM(true, "listarUsuarios"),
 	REQUEST_LEFT_ROOM(true, "sairSala"),
@@ -19,7 +19,7 @@ public enum Commands {
 	SEND_MESSAGE(false, null),
 	SEND_MESSAGE_PRIVATE(false, null),
 	SEND_PRIVATE_USER(false, null),
-	DO_NOTHING(false, null),
+	DEFAULT_COMMAND(false, null),
 	INVALID_COMMAND(false, null),
 	HELP(true, "/help");	
 	

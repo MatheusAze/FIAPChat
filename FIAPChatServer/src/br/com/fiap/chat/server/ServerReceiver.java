@@ -50,20 +50,20 @@ public class ServerReceiver extends Receiver {
 			break;
 
 		case REQUEST_LIST_ROOMS:
-			message.setCommand(Commands.DO_NOTHING);
-			message.setMessage("CHAT > " + Utils.LINE_SEPARATOR + Server.roomsToString());
+			message.setCommand(Commands.DEFAULT_COMMAND);
+			message.setMessage(Utils.LINE_SEPARATOR + Server.roomsToString());
 			Server.sender.sendMessage(message);
 			break;
 
 		case REQUEST_CREATE_ROOM:
 			message.setCommand(Commands.REQUEST_CREATE_ROOM);
-			message.setMessage("CHAT > Você irá criar uma nova sala. Pressione 'Enter' para continuar." + Utils.LINE_SEPARATOR);
+			message.setMessage("CHAT > Você irá criar uma nova sala. Pressione 'Enter' para continuar.");
 			Server.sender.sendMessage(message);
 			break;
 
 		case REQUEST_JOIN_ROOM:
 			message.setCommand(Commands.REQUEST_JOIN_ROOM);
-			message.setMessage("CHAT > Digite o nome da sala que deseja entrar:" + Utils.LINE_SEPARATOR);
+			message.setMessage("CHAT > Digite o nome da sala que deseja entrar");
 			Server.sender.sendMessage(message);
 			break;
 
@@ -73,12 +73,13 @@ public class ServerReceiver extends Receiver {
 				message.setMessage("CHAT > Usuário não identificado." + Utils.LINE_SEPARATOR
 						+ "Digite o seu nome de usuário: ");
 			} else {
+				Room currentRoom = Server.getRoomByUser(currentUser.getName());
+				Server.leftRoom(currentUser.getName(), currentRoom.getName());
+				
 				Room newRoom = GSON.getInstance().fromJson(msg, Room.class);
 				String result = Server.createRoom(currentUser.getName(), newRoom.getName(), newRoom.getDescription());
-				message.setCommand(Commands.DO_NOTHING);
-				message.setMessage("CHAT > " + result + "CHAT > Bem vindo à sala " + newRoom.getName() + "."
-						+ Utils.LINE_SEPARATOR + "Oque deseja fazer?" + Utils.LINE_SEPARATOR
-						+ Commands.getUserCommandsList());
+				message.setCommand(Commands.DEFAULT_COMMAND);
+				message.setMessage("CHAT > " + result + "CHAT > Bem vindo à sala " + newRoom.getName() + ".");
 			}
 
 			Server.sender.sendMessage(message);
@@ -89,13 +90,14 @@ public class ServerReceiver extends Receiver {
 			Room room = Server.getRoomByName(roomName);
 			if (room == null) {
 				message.setCommand(Commands.INVALID_COMMAND);
-				message.setMessage("CHAT > Sala não encontrada, tente novamente! " + Utils.LINE_SEPARATOR
-						+ Commands.getUserCommandsList());
+				message.setMessage("CHAT > Sala não encontrada, tente novamente! ");
 			} else {
+				Room currentRoom = Server.getRoomByUser(currentUser.getName());
+				Server.leftRoom(currentUser.getName(), currentRoom.getName());
+				
 				Server.joinRoom(currentUser.getName(), room.getName());
-				message.setCommand(Commands.DO_NOTHING);
-				message.setMessage("CHAT > Bem vindo à sala " + room.getName() + "." + Utils.LINE_SEPARATOR
-						+ "Oque deseja fazer?" + Utils.LINE_SEPARATOR + Commands.getUserCommandsList());
+				message.setCommand(Commands.DEFAULT_COMMAND);
+				message.setMessage(room.getName() + " > Bem vindo à sala " + room.getName() + ".");
 			}
 
 			Server.sender.sendMessage(message);
@@ -103,49 +105,49 @@ public class ServerReceiver extends Receiver {
 
 		case REQUEST_USERS_IN_ROOM:
 			Room currentRoom = Server.getRoomByUser(currentUser.getName());
-			message.setCommand(Commands.DO_NOTHING);
-			message.setMessage("CHAT > " + Utils.LINE_SEPARATOR + Server.usersInRoomToString(currentRoom.getName()));
+			message.setCommand(Commands.DEFAULT_COMMAND);
+			message.setMessage(currentRoom.getName() + " > " + Utils.LINE_SEPARATOR + Server.usersInRoomToString(currentRoom.getName()));
 			Server.sender.sendMessage(message);
 			break;
 
 		case REQUEST_MESSAGE:
 			message.setCommand(Commands.REQUEST_MESSAGE);
-			message.setMessage("CHAT > escreva a mensagem " + Utils.LINE_SEPARATOR);
+			message.setMessage("CHAT > escreva a mensagem ");
 			Server.sender.sendMessage(message);
 			break;
 
 		case REQUEST_MESSAGE_PRIVATE:
 			message.setCommand(Commands.REQUEST_MESSAGE_PRIVATE);
-			message.setMessage("CHAT > escreva o usuario: " + Utils.LINE_SEPARATOR);
+			message.setMessage("CHAT > escreva o usuario: ");
 			Server.sender.sendMessage(message);
 			break;
 
 		case REQUEST_LEFT_ROOM:
 			Room crntRoom = Server.getRoomByUser(currentUser.getName());
 			Server.leftRoom(currentUser.getName(), crntRoom.getName());
-			message.setCommand(Commands.DO_NOTHING);
-			message.setMessage("CHAT > Oque deseja fazer?" + Utils.LINE_SEPARATOR + Commands.getUserCommandsList());
+			message.setCommand(Commands.DEFAULT_COMMAND);
+			message.setMessage("CHAT > Você saiu da sala " + crntRoom.getName());
 			Server.sender.sendMessage(message);
 			break;
 
 		case REQUEST_DELETE_ROOM:
 			Room crtRoom = Server.getRoomByUser(currentUser.getName());
 			Server.deleteRoom(currentUser.getName(), crtRoom.getName());
-			message.setCommand(Commands.DO_NOTHING);
-			message.setMessage("CHAT > Oque deseja fazer?" + Utils.LINE_SEPARATOR + Commands.getUserCommandsList());
+			message.setCommand(Commands.DEFAULT_COMMAND);
+			message.setMessage("");
 			Server.sender.sendMessage(message);
 			break;
 
 		case SEND_MESSAGE:
 			Room cRoom = Server.getRoomByUser(currentUser.getName());
-			message.setCommand(Commands.DO_NOTHING);
+			message.setCommand(Commands.DEFAULT_COMMAND);
 			Server.sendMessage(currentUser.getName(), cRoom.getName(), message.getMessage());
 			// Server.sender.sendMessage(message);
 			break;
 
 		case SEND_MESSAGE_PRIVATE:
 			Room bRoom = Server.getRoomByUser(currentUser.getName());
-			message.setCommand(Commands.DO_NOTHING);
+			message.setCommand(Commands.DEFAULT_COMMAND);
 			Server.sendPrivateMessage(currentUser.getName(), message.getAdditionalInfo().get("destUser"),
 					bRoom.getName(), message.getMessage());
 			Server.sender.sendMessage(message);

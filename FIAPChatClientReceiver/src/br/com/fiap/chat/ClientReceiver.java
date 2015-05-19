@@ -26,13 +26,13 @@ public class ClientReceiver extends Receiver {
 				Console.getConsole().println(msg);			
 				Client.setInputCommand(Commands.SEND_USER_NAME);
 				break;
-			case DO_NOTHING:
+			case DEFAULT_COMMAND:
 			case INVALID_COMMAND:
 				Console.getConsole().println(msg);			
-				Client.setInputCommand(Commands.DO_NOTHING);			
+				Client.setInputCommand(Commands.DEFAULT_COMMAND);			
 				break;	
 			case REQUEST_CREATE_ROOM:
-				Console.getConsole().print(msg);
+				Console.getConsole().println(msg);
 				Client.setInputCommand(Commands.SEND_CREATE_ROOM);
 				break;
 			case REQUEST_JOIN_ROOM:

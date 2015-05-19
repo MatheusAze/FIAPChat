@@ -2,7 +2,6 @@ package br.com.fiap.chat.server;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -43,36 +42,40 @@ public class Server {
 	}
 
 	public static Room getRoomByName(String name) {
-		for (Room r : rooms) {
-			if (r != null && r.getName().equals(name)) {
-				return r;
+		Room selectedRoom = null;
+		for (Room room : rooms) {
+			if (room != null && room.getName().equals(name)) {
+				selectedRoom = room;
+				break;
 			}
 		}
-		return null;
+		return selectedRoom;
 
 	}
 
 	public static Room getRoomByUser(String userName) {
-		for (Room r : rooms) {
+		Room selectedRoom = null;
+		FOR_ROOMS: for (Room r : rooms) {
 			if (r != null) {
 				for (User user : r.getUsers()) {
 					if (user != null && user.getName().equalsIgnoreCase(userName)) {
-						return r;
+						selectedRoom = r;
+						break FOR_ROOMS;
 					}
 				}
 			}
 		}
-		return null;
+		return selectedRoom;
 	}
 
 	public static void joinRoom(String userName, String roomName) {
 		Room room = getRoomByName(roomName);
 		User user = getUserByName(userName);
 		
-		Room currentRoom = getRoomByUser(userName);
-		if(!currentRoom.getName().equals(LOBBY)) {
+		//Room currentRoom = getRoomByUser(userName);
+		//if(!currentRoom.getName().equals(LOBBY)) {
 			leftRoom(userName, roomName);
-		}
+		//}
 		
 		room.getUsers().add(user);
 
@@ -85,18 +88,25 @@ public class Server {
 
 	public static void leftRoom(String userName, String roomName) {
 		Room room = getRoomByName(roomName);
+		User userToRemove = null;
 		
-		for(User user : room.getUsers()) {
+		for (User user : room.getUsers()) {
 			if (user.getName().equalsIgnoreCase(userName)) {
-				room.getUsers().remove(user);
-				joinRoom(user.getName(), LOBBY);
+				userToRemove = user;
 			} else {
-				Message mensagem = new Message(user.getUserIp(), Commands.NOTIFICATION, "CHAT > Usuário " + userName
-						+ " saiu da sala." + Utils.LINE_SEPARATOR);
+				Message mensagem = new Message(user.getUserIp(), Commands.NOTIFICATION, 
+						"CHAT > Usuário " + userName + " saiu do(a) " + roomName + ".");
 				Server.sender.sendMessage(mensagem);
 			}
 		}
 		
+		if(userToRemove != null) {
+			room.getUsers().remove(userToRemove);
+			if (!roomName.equalsIgnoreCase(LOBBY)) {
+				joinRoom(userToRemove.getName(), LOBBY);
+			}
+		}
+
 	}
 
 	public static User getUserByName(String name) {
@@ -122,7 +132,7 @@ public class Server {
 
 	public static String usersInRoomToString(String roomName) {
 		Room room = getRoomByName(roomName);
-		String formatedString = " --- Usuários da sala " + roomName + ":  --- " + Utils.LINE_SEPARATOR;
+		String formatedString = " --- Usuários da sala (" + roomName + ")  --- " + Utils.LINE_SEPARATOR;
 		for (int i = 0; i < room.getUsers().size(); i++) {
 			formatedString += "(" + (i + 1) + ") " + room.getUsers().get(i).getName() + Utils.LINE_SEPARATOR;
 		}
@@ -143,21 +153,21 @@ public class Server {
 		Room room = getRoomByName(roomName);
 		User user = getUserByName(userName);
 
-		if (room.getOwner().equals(user)) {
-			rooms.remove(room);
-
-			Iterator<User> iterUser = room.getUsers().iterator();
-			while (iterUser.hasNext()) {
-				User usuario = iterUser.next();
-
+		if (room.getOwner().getUserIp().equalsIgnoreCase(user.getUserIp())) {
+			
+			for(User usuario : room.getUsers()) {
+				Server.leftRoom(usuario.getName(), roomName);
 				Message mensagem = new Message(usuario.getUserIp(), Commands.NOTIFICATION,
-						"CHAT > Você foi removido da sala " + room.getName()
-								+ ", pois a sala foi deletada pelo administrador." + Utils.LINE_SEPARATOR);
+						"CHAT > Você foi removido de " + room.getName()
+								+ ", pois a sala foi deletada pelo administrador.");
 				Server.sender.sendMessage(mensagem);
 			}
+			
+			rooms.remove(room);
+
 		} else {
 			Message mensagem = new Message(user.getUserIp(), Commands.NOTIFICATION,
-					"CHAT > A sala somente pode ser deletada pelo administrador." + Utils.LINE_SEPARATOR);
+					"CHAT > A sala somente pode ser deletada pelo seu criador.");
 			Server.sender.sendMessage(mensagem);
 		}
 	}
@@ -182,7 +192,7 @@ public class Server {
 	public static void sendMessage(String remetente, String nomeSala, String msg) {
 		Message message = new Message();
 		message.setCommand(Commands.NOTIFICATION);
-		message.setMessage(remetente + ": " + msg + Utils.LINE_SEPARATOR);
+		message.setMessage(remetente + ": " + msg);
 		
 		for (User u : getRoomByName(nomeSala).getUsers()) {
 			message.setDestinationIp(u.getUserIp());
@@ -199,16 +209,16 @@ public class Server {
 			if (r != null) {
 				message.setDestinationIp(u.getUserIp());
 				message.setCommand(Commands.NOTIFICATION);
-				message.setMessage(remetente +": " + msg + Utils.LINE_SEPARATOR);
+				message.setMessage(remetente +": " + msg);
 			} else {
 				message.setCommand(Commands.NOTIFICATION);
-				message.setMessage("CHAT > Usuário" + destino + " não estava na sala " + Utils.LINE_SEPARATOR);
+				message.setMessage("CHAT > Usuário " + destino + " não está na sala.");
 			}
 			Server.sender.sendMessage(message);
 		} catch (Exception e) {
 			Message message = new Message();
 			message.setCommand(Commands.NOTIFICATION);
-			message.setMessage("CHAT > erro ao enviar mensagem " + Utils.LINE_SEPARATOR);
+			message.setMessage("CHAT > Erro inesperado ao enviar mensagem. Por favor, tente novamente.");
 			Server.sender.sendMessage(message);
 		}
 
