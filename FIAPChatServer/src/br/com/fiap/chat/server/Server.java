@@ -70,13 +70,8 @@ public class Server {
 
 	public static void joinRoom(String userName, String roomName) {
 		Room room = getRoomByName(roomName);
-		User user = getUserByName(userName);
-		
-		//Room currentRoom = getRoomByUser(userName);
-		//if(!currentRoom.getName().equals(LOBBY)) {
-			leftRoom(userName, roomName);
-		//}
-		
+		User user = getUserByName(userName);		
+
 		room.getUsers().add(user);
 
 		for (User u : room.getUsers()) {
@@ -102,6 +97,9 @@ public class Server {
 		
 		if(userToRemove != null) {
 			room.getUsers().remove(userToRemove);
+			Message mensagem = new Message(userToRemove.getUserIp(), Commands.NOTIFICATION, 
+					"CHAT > Você deixou a sala: " + roomName + ".");
+			Server.sender.sendMessage(mensagem);
 			if (!roomName.equalsIgnoreCase(LOBBY)) {
 				joinRoom(userToRemove.getName(), LOBBY);
 			}
@@ -157,10 +155,13 @@ public class Server {
 			
 			for(User usuario : room.getUsers()) {
 				Server.leftRoom(usuario.getName(), roomName);
-				Message mensagem = new Message(usuario.getUserIp(), Commands.NOTIFICATION,
-						"CHAT > Você foi removido de " + room.getName()
-								+ ", pois a sala foi deletada pelo administrador.");
-				Server.sender.sendMessage(mensagem);
+				if (!userName.equals(usuario.getName()))
+				{
+					Message mensagem = new Message(usuario.getUserIp(), Commands.NOTIFICATION,
+							"CHAT > Você foi removido de " + room.getName()
+									+ ", pois a sala foi deletada pelo administrador.");
+					Server.sender.sendMessage(mensagem);
+				}
 			}
 			
 			rooms.remove(room);
@@ -184,43 +185,52 @@ public class Server {
 		return user;
 	}
 
-	/*
-	 * enviarMensagem(usuárioRemetente, nomeDaSala, msg) – envia a mensagem “msg” para a sala “nomeDaSala”, garantindo o
-	 * envio a todos os outros usuários. ◦ enviarMensagemPrivada(usuárioOrigem, usuárioDestino, msg) – Mensagem privada.
-	 */
-
-	public static void sendMessage(String remetente, String nomeSala, String msg) {
+	public static void sendMessage(String sender, String roomName, String msg) {
 		Message message = new Message();
 		message.setCommand(Commands.NOTIFICATION);
-		message.setMessage(remetente + ": " + msg);
+		message.setMessage(sender + ": " + msg);
 		
-		for (User u : getRoomByName(nomeSala).getUsers()) {
+		for (User u : getRoomByName(roomName).getUsers()) {
 			message.setDestinationIp(u.getUserIp());
 			Server.sender.sendMessage(message);
 		}
 	}
 
-	public static void sendPrivateMessage(String remetente, String destino, String nomeSala, String msg) {
-
+	public static void sendPrivateMessage(String sender, String destination, String msg) {
 		try {
-			Room r = getRoomByUser(destino);
-			User u = getUserByName(destino);
 			Message message = new Message();
-			if (r != null) {
-				message.setDestinationIp(u.getUserIp());
+			User destinationUser = getUserByName(destination);
+					
+			Room senderRoom = getRoomByUser(sender);
+			Room destinationRoom = getRoomByUser(destination);
+			
+			if(destinationUser == null)
+			{
 				message.setCommand(Commands.NOTIFICATION);
-				message.setMessage(remetente +": " + msg);
-			} else {
+				message.setMessage("CHAT > Usuário " + destination + " não existe.");
+				Server.sender.sendMessage(message);
+			} else if(!senderRoom.getName().equals(destinationRoom.getName()))
+			{
 				message.setCommand(Commands.NOTIFICATION);
-				message.setMessage("CHAT > Usuário " + destino + " não está na sala.");
+				message.setMessage("CHAT > Usuário " + destination + " não está na mesma sala que a sua.");
+				Server.sender.sendMessage(message);
 			}
-			Server.sender.sendMessage(message);
+			else
+			{
+				message.setCommand(Commands.NOTIFICATION);
+				message.setMessage("(private) " + sender + ": " + msg);
+				Server.sender.sendMessage(message);
+				
+				message.setDestinationIp(destinationUser.getUserIp());
+				message.setCommand(Commands.NOTIFICATION);
+				message.setMessage("(private) " + sender + ": " + msg);
+				Server.sender.sendMessage(message);
+			}			
 		} catch (Exception e) {
 			Message message = new Message();
 			message.setCommand(Commands.NOTIFICATION);
 			message.setMessage("CHAT > Erro inesperado ao enviar mensagem. Por favor, tente novamente.");
 			Server.sender.sendMessage(message);
 		}
-
 	}
 }

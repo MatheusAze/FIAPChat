@@ -36,15 +36,15 @@ public class Client {
 		return msg;
 	}
 	
-	public static void requestUserInputForPrivateMessage() {	
-		String destUser = Console.getConsole().readLine("CHAT > Digite o nome do usuário");
-		String privateMessage = Console.getConsole().readLine("CHAT > Escreva a mensagem");
+	public static Message requestUserInputForPrivateMessage() {	
+		String destUser = Console.getConsole().readLine("Digite o nome do usuário: ");
+		String privateMessage = Console.getConsole().readLine("Escreva a mensagem: ");
 		
 		Message msg = new Message();
 		msg.setCommand(Commands.SEND_MESSAGE_PRIVATE);
 		msg.getAdditionalInfo().put("destUser", destUser);
 		msg.setMessage(privateMessage);
 		
-		sender.sendMessage(msg);
+		return msg;
 	}
 }

@@ -27,7 +27,7 @@ public class InitClientSender {
 				String operationStr = CommonMemory.readInfo();
 				Commands command = Commands.SEND_MESSAGE;
 				if (operationStr.charAt(0) == '0' // Not used yet
-						&& (!operationStr.equalsIgnoreCase(Commands.DEFAULT_COMMAND.toString())  // not a default command
+						&& (!operationStr.contains(Commands.DEFAULT_COMMAND.toString())  // not contains default command
 						 && !operationStr.equalsIgnoreCase(Commands.NOTIFICATION.toString()))) { // not a notification from server
 					
 					operationStr = operationStr.substring(2);
@@ -98,6 +98,8 @@ public class InitClientSender {
 		case SEND_CREATE_ROOM:
 			msg = Client.requestUserInputForRoomCreation();
 			break;
+		case SEND_MESSAGE_PRIVATE:
+			msg = Client.requestUserInputForPrivateMessage();
 		default:
 			break;
 		}

@@ -45,7 +45,7 @@ public class ClientReceiver extends Receiver {
 				break;
 			case REQUEST_MESSAGE_PRIVATE:
 				Console.getConsole().println(msg);
-				Client.requestUserInputForPrivateMessage();
+				Client.setInputCommand(Commands.SEND_MESSAGE_PRIVATE);
 			default:
 				break;
 		}

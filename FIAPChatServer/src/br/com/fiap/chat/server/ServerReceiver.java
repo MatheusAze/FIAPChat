@@ -91,6 +91,10 @@ public class ServerReceiver extends Receiver {
 			if (room == null) {
 				message.setCommand(Commands.INVALID_COMMAND);
 				message.setMessage("CHAT > Sala não encontrada, tente novamente! ");
+			} else if (roomName.equalsIgnoreCase(Server.LOBBY))
+			{
+				message.setCommand(Commands.DEFAULT_COMMAND);
+				message.setMessage("CHAT > Você já está no Lobby!");	
 			} else {
 				Room currentRoom = Server.getRoomByUser(currentUser.getName());
 				Server.leftRoom(currentUser.getName(), currentRoom.getName());
@@ -118,47 +122,54 @@ public class ServerReceiver extends Receiver {
 
 		case REQUEST_MESSAGE_PRIVATE:
 			message.setCommand(Commands.REQUEST_MESSAGE_PRIVATE);
-			message.setMessage("CHAT > escreva o usuario: ");
+			message.setMessage("CHAT > Você irá enviar uma mensagem privada. Pressione 'Enter' para continuar.");
 			Server.sender.sendMessage(message);
 			break;
 
 		case REQUEST_LEFT_ROOM:
 			Room crntRoom = Server.getRoomByUser(currentUser.getName());
-			Server.leftRoom(currentUser.getName(), crntRoom.getName());
-			message.setCommand(Commands.DEFAULT_COMMAND);
-			message.setMessage("CHAT > Você saiu da sala " + crntRoom.getName());
-			Server.sender.sendMessage(message);
+			if (!crntRoom.getName().equalsIgnoreCase(Server.LOBBY))
+			{				
+				Server.leftRoom(currentUser.getName(), crntRoom.getName());
+			}
+			else
+			{
+				message.setCommand(Commands.DEFAULT_COMMAND);
+				message.setMessage("CHAT > Você já está no Lobby!");
+				Server.sender.sendMessage(message);
+			}
+
 			break;
 
 		case REQUEST_DELETE_ROOM:
 			Room crtRoom = Server.getRoomByUser(currentUser.getName());
-			Server.deleteRoom(currentUser.getName(), crtRoom.getName());
-			message.setCommand(Commands.DEFAULT_COMMAND);
-			message.setMessage("");
-			Server.sender.sendMessage(message);
+			if (!crtRoom.getName().equalsIgnoreCase(Server.LOBBY))
+			{
+				Server.deleteRoom(currentUser.getName(), crtRoom.getName());
+			}
+			else		
+			{
+				message.setCommand(Commands.DEFAULT_COMMAND);
+				message.setMessage("CHAT > Você não pode deletar o Lobby!");
+				Server.sender.sendMessage(message);
+			}
 			break;
 
 		case SEND_MESSAGE:
 			Room cRoom = Server.getRoomByUser(currentUser.getName());
 			message.setCommand(Commands.DEFAULT_COMMAND);
 			Server.sendMessage(currentUser.getName(), cRoom.getName(), message.getMessage());
-			// Server.sender.sendMessage(message);
 			break;
 
 		case SEND_MESSAGE_PRIVATE:
-			Room bRoom = Server.getRoomByUser(currentUser.getName());
 			message.setCommand(Commands.DEFAULT_COMMAND);
-			Server.sendPrivateMessage(currentUser.getName(), message.getAdditionalInfo().get("destUser"),
-					bRoom.getName(), message.getMessage());
-			Server.sender.sendMessage(message);
+			Server.sendPrivateMessage(currentUser.getName(), message.getAdditionalInfo().get("destUser"), message.getMessage());
 			break;
 
 		case HELP:
-
 			message.setCommand(Commands.NOTIFICATION);
 			message.setMessage(Commands.getUserCommandsList());
 			Server.sender.sendMessage(message);
-
 			break;
 
 		default:

@@ -12,13 +12,11 @@ public enum Commands {
 	REQUEST_USERS_IN_ROOM(true, "listarUsuarios"),
 	REQUEST_LEFT_ROOM(true, "sairSala"),
 	REQUEST_DELETE_ROOM(true, "deletarSala"),
-	REQUEST_PRIVATE_USER(false, null),
 	SEND_USER_NAME(false, null),
 	SEND_CREATE_ROOM(false, null),
 	SEND_JOIN_ROOM(false, null),
 	SEND_MESSAGE(false, null),
 	SEND_MESSAGE_PRIVATE(false, null),
-	SEND_PRIVATE_USER(false, null),
 	DEFAULT_COMMAND(false, null),
 	INVALID_COMMAND(false, null),
 	HELP(true, "/help");	
