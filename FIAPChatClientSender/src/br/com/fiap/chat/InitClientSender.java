@@ -23,14 +23,22 @@ public class InitClientSender {
 				Console.getConsole().clear();
 				String message = Console.getConsole().readLine();
 				
-				
-				
 				String operationStr = CommonMemory.readInfo();
 				Commands command = Commands.SEND_MESSAGE;
 				if(operationStr.charAt(0) == '0') {
 					operationStr = operationStr.substring(2);
 					System.out.println("-" + operationStr + "-");
 					command = Commands.valueOf(operationStr);
+					if (command.equals(Commands.MENU_APP))
+					{
+						command = Commands.getCommandByFriendlyCommand(message);
+						if (command == null)
+						{
+							System.out.println("Comando Inválido, tente novamente!");
+							continue;
+						}
+					}
+
 					CommonMemory.writeInfo(operationStr);
 				}
 				

@@ -1,13 +1,9 @@
 package br.com.fiap.chat.server;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 
 import br.com.fiap.chat.utils.Commands;
@@ -20,62 +16,13 @@ public class Server {
 	public static List<Room> rooms;
 	public static Set<User> users;
 	public static ServerSender sender;
-	public static Map<Integer, String> _appMenu = new HashMap<Integer, String>();
-	public static Map<Integer, String> _roomMenu = new HashMap<Integer, String>();
-	
+
 	public static final String LOBBY ="Lobby";
 
 	static {
 		rooms = new ArrayList<Room>();
 		users = new HashSet<User>();
 		sender = new ServerSender();
-
-		// Menu da Aplicação
-		_appMenu.put(1, "Listar Salas");
-		_appMenu.put(2, "Criar Sala");
-		_appMenu.put(3, "Entrar Sala");
-
-		// Menu do Chat, dentro de uma sala
-		_roomMenu.put(1, "Ver Usuários da sala");
-		_roomMenu.put(2, "Enviar Mensagem");
-		_roomMenu.put(3, "Enviar Mensagem Privada");
-		_roomMenu.put(4, "Sair da Sala");
-		_roomMenu.put(5, "Encerrar/ Excluir a Sala");
-	}
-
-	public static String menuToString(Map<Integer, String> menu) {
-		String menuToString = "";
-		for (Entry<Integer, String> option : menu.entrySet()) {
-			Integer key = option.getKey();
-			String value = option.getValue();
-			menuToString += key + " - " + value + Utils.LINE_SEPARATOR;
-		}
-
-		return menuToString;
-	}
-
-	public static String menuToString(Map<Integer, String> menu, int keyToSkip) {
-		String menuToString = "";
-		for (Entry<Integer, String> option : menu.entrySet()) {
-			Integer key = option.getKey();
-			String value = option.getValue();
-
-			if (keyToSkip == key)
-				continue;
-
-			menuToString += key + " - " + value + Utils.LINE_SEPARATOR;
-		}
-
-		return menuToString;
-	}
-
-	public static Integer getKeyByValue(Map<Integer, String> menu, String value) {
-		for (Entry<Integer, String> entry : menu.entrySet()) {
-			if (Objects.equals(value, entry.getValue())) {
-				return entry.getKey();
-			}
-		}
-		return null;
 	}
 
 	public static void getAccess(String userIp) {
@@ -237,7 +184,7 @@ public class Server {
 		for (User u : getRoomByName(nomeSala).getUsers()) {
 			Message message = new Message();
 			message.setDestinationIp(u.getUserIp());
-			message.setCommand(Commands.MENU_ROOM);
+			message.setCommand(Commands.MENU_APP);
 			message.setMessage("CHAT > Usuário " + remetente + ": " + msg + Utils.LINE_SEPARATOR);
 			Server.sender.sendMessage(message);
 		}
@@ -251,16 +198,16 @@ public class Server {
 			Message message = new Message();
 			if (r != null) {
 				message.setDestinationIp(u.getUserIp());
-				message.setCommand(Commands.MENU_ROOM);
+				message.setCommand(Commands.MENU_APP);
 				message.setMessage("CHAT > Usuário " + remetente + ": " + msg + Utils.LINE_SEPARATOR);
 			} else {
-				message.setCommand(Commands.MENU_ROOM);
+				message.setCommand(Commands.MENU_APP);
 				message.setMessage("CHAT > Usuário" + destino + " não estava na sala " + Utils.LINE_SEPARATOR);
 			}
 			Server.sender.sendMessage(message);
 		} catch (Exception e) {
 			Message message = new Message();
-			message.setCommand(Commands.MENU_ROOM);
+			message.setCommand(Commands.MENU_APP);
 			message.setMessage("CHAT > erro ao enviar mensagem " + Utils.LINE_SEPARATOR);
 			Server.sender.sendMessage(message);
 		}

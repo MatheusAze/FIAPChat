@@ -1,24 +1,26 @@
 package br.com.fiap.chat.utils;
 
 public enum Commands {
-	// TODO continuar mapeamento comandos de usuário
 	NOTIFICATION(false, null),
 	ACCESS(false, null),
 	REQUEST_USER_NAME(false, null),
-	SEND_USER_NAME(false, null),
-	MENU_APP(false, null),
-	MENU_ROOM(false, null),
-	INVALID_COMMAND(false, null),
+	REQUEST_LIST_ROOMS(true, "listarSala"),
 	REQUEST_CREATE_ROOM(true, "criarSala"),
-	SEND_CREATE_ROOM(false, null),
 	REQUEST_JOIN_ROOM(true, "entrarSala"),
-	SEND_JOIN_ROOM(false, null),
-	REQUEST_MESSAGE(false, null),
-	SEND_MESSAGE(false, null),
-	REQUEST_MESSAGE_PRIVATE(false, null),
-	SEND_MESSAGE_PRIVATE(false, null),
+	REQUEST_MESSAGE(true, "enviarMsg"),
+	REQUEST_MESSAGE_PRIVATE(true, "enviarMsgPrivada"),
+	REQUEST_USERS_IN_ROOM(true, "listarUsuarios"),
+	REQUEST_LEFT_ROOM(true, "sairSala"),
+	REQUEST_DELETE_ROOM(true, "deletarSala"),
 	REQUEST_PRIVATE_USER(false, null),
-	SEND_PRIVATE_USER(false, null);
+	SEND_USER_NAME(false, null),
+	SEND_CREATE_ROOM(false, null),
+	SEND_JOIN_ROOM(false, null),
+	SEND_MESSAGE(false, null),
+	SEND_MESSAGE_PRIVATE(false, null),
+	SEND_PRIVATE_USER(false, null),
+	MENU_APP(false, null),
+	INVALID_COMMAND(false, null);	
 	
 	private boolean isUserCommand;
 	private String userFriendlyCommand;
@@ -37,5 +39,16 @@ public enum Commands {
 		}
 		
 		return commandsList;
+	}
+	
+	public static Commands getCommandByFriendlyCommand(String friendlyCommand) {
+		for (Commands command : Commands.values()) {
+			if(command.isUserCommand &&
+					command.userFriendlyCommand.equals(friendlyCommand)) {
+				return command;
+			}
+		}
+		
+		return null;
 	}
 }

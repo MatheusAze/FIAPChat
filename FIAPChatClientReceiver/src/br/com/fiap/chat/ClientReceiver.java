@@ -38,11 +38,7 @@ public class ClientReceiver extends Receiver {
 			case REQUEST_JOIN_ROOM:
 				Console.getConsole().println(msg);			
 				Client.setInputCommand(Commands.SEND_JOIN_ROOM);
-				break;
-			case MENU_ROOM:
-				Console.getConsole().println(msg);			
-				Client.setInputCommand(Commands.MENU_ROOM);			
-				break;		
+				break;	
 			case REQUEST_MESSAGE:
 				Console.getConsole().println(msg);
 				Client.setInputCommand(Commands.SEND_MESSAGE);
