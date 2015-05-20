@@ -154,14 +154,21 @@ public class Server {
 		if (room.getOwner().getUserIp().equalsIgnoreCase(user.getUserIp())) {
 			
 			for(User usuario : room.getUsers()) {
-				Server.leftRoom(usuario.getName(), roomName);
+				Server.joinRoom(usuario.getName(), Server.LOBBY);
+				Message mensagem;
 				if (!userName.equals(usuario.getName()))
 				{
-					Message mensagem = new Message(usuario.getUserIp(), Commands.NOTIFICATION,
+					mensagem = new Message(usuario.getUserIp(), Commands.NOTIFICATION,
 							"CHAT > Você foi removido de " + room.getName()
 									+ ", pois a sala foi deletada pelo administrador.");
-					Server.sender.sendMessage(mensagem);
 				}
+				else
+				{
+					mensagem = new Message(usuario.getUserIp(), Commands.NOTIFICATION,
+							"CHAT > Você removeu a sala " + room.getName()
+									+ " com sucesso.");
+				}
+				Server.sender.sendMessage(mensagem);
 			}
 			
 			rooms.remove(room);
@@ -199,6 +206,7 @@ public class Server {
 	public static void sendPrivateMessage(String sender, String destination, String msg) {
 		try {
 			Message message = new Message();
+			User senderUser = getUserByName(sender);
 			User destinationUser = getUserByName(destination);
 					
 			Room senderRoom = getRoomByUser(sender);
@@ -217,6 +225,7 @@ public class Server {
 			}
 			else
 			{
+				message.setDestinationIp(senderUser.getUserIp());
 				message.setCommand(Commands.NOTIFICATION);
 				message.setMessage("(private) " + sender + ": " + msg);
 				Server.sender.sendMessage(message);

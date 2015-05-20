@@ -1,6 +1,7 @@
 package br.com.fiap.chat.server;
 
 import br.com.fiap.chat.utils.Commands;
+import br.com.fiap.chat.utils.Console;
 import br.com.fiap.chat.utils.GSON;
 import br.com.fiap.chat.utils.Receiver;
 import br.com.fiap.chat.utils.Utils;
@@ -22,10 +23,12 @@ public class ServerReceiver extends Receiver {
 
 		String msg = message.getMessage().trim();
 		Commands operation = message.getCommand();
-
+		
+		
+		Console.getConsole().println("[" + (currentUser != null ? currentUser.getName() : "ANONIMO") + "] " + operation.toString());
+		
 		switch (operation) {
-		case ACCESS:
-			// System.out.println("> IP " + sourceIp + " acessando pela primeira vez");
+		case ACCESS:			
 			Server.getAccess(sourceIp);
 			message.setCommand(Commands.REQUEST_USER_NAME);
 			message.setMessage("CHAT > Digite o seu nome de usuário");
@@ -179,6 +182,7 @@ public class ServerReceiver extends Receiver {
 			break;
 
 		}
+		
 	}
 
 }
